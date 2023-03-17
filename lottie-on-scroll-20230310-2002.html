@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Lottie</title>
+        <style>
+            @charset "UTF-8";
+            /* CSS Document */
+            /* Style for the table wrapper */
+            html,
+            body {
+                display: grid;
+                background-color: black;
+                height: 300vh;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #lottie-container {
+                height: 100%;
+                width: 100%;
+                position: relative;
+                top: 0px;
+            }
+        </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.7.8/lottie.min.js"></script>
+    </head>
+    <body>
+        <div id="lottie-container"></div>
+        <script>
+            const lottieContainer = document.getElementById("lottie-container");
+            const lottiePlayer = document.createElement("lottie-player");
+            lottiePlayer.setAttribute("id", "firstLottie");
+            lottiePlayer.setAttribute("src", "https://assets.website-files.com/5d2881857c51a204b16f3a1a/5d5fb491a7638f085e4ff96a_Line%20Intro%20Long.json");
+            lottiePlayer.setAttribute("background", "white"); // lighter color
+//           lottiePlayer.setAttribute("speed", ".125");
+            lottiePlayer.setAttribute("loop", "false"); // don't loop automatically
+            lottieContainer.appendChild(lottiePlayer);
+
+            
+            const lottieAnimation = lottie.loadAnimation({
+                container: lottieContainer,
+                renderer: "svg",
+                rendererSettings: {
+                    preserveAspectRatio: "none",
+                    progressiveLoad: true,
+                },
+                loop: false,
+                autoplay: false,
+                path: lottiePlayer.getAttribute("src")
+            });
+
+            // Add this code to change the color of the Lottie animation
+            const bodyBackgroundColor = window.getComputedStyle(document.body).getPropertyValue("background-color");
+            const contrastColor = getContrastColor(bodyBackgroundColor);
+            console.log(`bodyBackgroundColor: ${bodyBackgroundColor}, contrastColor: ${contrastColor} `)
+   
+            const windowHeight = window.innerHeight;
+            console.log(`windowHeight: ${windowHeight}`);
+
+            const paths = document.querySelectorAll("#firstLottie path");
+            paths.forEach((path) => {
+                path.setAttribute("stroke", contrastColor);
+            });
+
+            let lastScrollTop = 0;
+            let currentDirection = 1; // 1 for forward, -1 for backward
+            let reverse = false; // added flag to track reverse scroll
+            
+            const onScroll = () => {
+                const lottieOffset = lottieContainer.getBoundingClientRect().top;
+                console.log(`lottieOffset: ${lottieOffset}`);
+
+                const currentScrollTop = window.scrollY;
+                console.log(`currentScrollTop: ${currentScrollTop}`);
+
+                if (lottieOffset < windowHeight && lottieAnimation.isPaused) {
+                    lottieAnimation.play();
+                }
+                else if (lottieOffset > windowHeight && !lottieAnimation.isPaused) {
+                    lottieAnimation.pause();
+                }
+
+                const direction = currentScrollTop > lastScrollTop ? 1 : -1;
+                const speedFactor = 0.125; // adjust as needed
+                
+                console.log(`lottieAnimation.currentFrame: ${lottieAnimation.currentFrame}`);
+                const newTime = lottieAnimation.currentFrame + direction * speedFactor;
+                console.log(`newTime = ${lottieAnimation.currentFrame}`);
+                lottieAnimation.goToAndStop(newTime, true);
+
+                lastScrollTop = currentScrollTop;
+            }
+
+            function getContrastColor(color) {
+                // convert color to RGB format
+                const match = /rgb\((\d+).*?(\d+).*?(\d+)\)/.exec(color);
+                if (!match) return "#ffffff"; // return white if color is not in rgb format
+                const r = match[1];
+                const g = match[2];
+                const b = match[3];
+                console.log(`r: ${r}, g:${g}, b:${b}`);
+                // calculate the relative luminance of the color
+                const relLuminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                console.log(`relLuminance: ${relLuminance}`)
+                // return black or white depending on the relative luminance
+                return relLuminance > 128 ? "#000000" : "#ffffff";
+            }
+
+            window.addEventListener("scroll", onScroll);
+        </script>
+    </body>
+</html>
